@@ -1,0 +1,7 @@
+# Realtek RTL8821CU
+DefaultVendor=  0x0bda
+DefaultProduct= 0x1a2b
+
+TargetVendor= 0x0bda
+TargetProduct= 0xc820
+StandardEject=1
