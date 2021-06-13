@@ -3974,6 +3974,57 @@ exit:
 }
 #endif /* CONFIG_RTW_MESH */
 
+#ifdef RTW_BUSY_DENY_SCAN
+static int proc_get_scan_interval_thr(struct seq_file *m, void *v)
+{
+	struct net_device *dev = m->private;
+	struct _ADAPTER *adapter= (struct _ADAPTER *)rtw_netdev_priv(dev);
+	struct registry_priv *rp = &adapter->registrypriv;
+
+
+	RTW_PRINT_SEL(m, "scan interval threshold = %u ms\n",
+		      rp->scan_interval_thr);
+
+	return 0;
+}
+
+static ssize_t proc_set_scan_interval_thr(struct file *file,
+				          const char __user *buffer,
+				          size_t count, loff_t *pos, void *data)
+{
+	struct net_device *dev = data;
+	struct _ADAPTER *adapter= (struct _ADAPTER *)rtw_netdev_priv(dev);
+	struct registry_priv *rp = &adapter->registrypriv;
+	char tmp[12];
+	int num = 0;
+	u32 thr = 0;
+
+
+	if (count > sizeof(tmp)) {
+		rtw_warn_on(1);
+		return -EFAULT;
+	}
+
+	if (!buffer || copy_from_user(tmp, buffer, count))
+		goto exit;
+
+	num = sscanf(tmp, "%u", &thr);
+	if (num != 1) {
+		RTW_ERR("%s: invalid parameter!\n", __FUNCTION__);
+		goto exit;
+	}
+
+	rp->scan_interval_thr = thr;
+
+	RTW_PRINT("%s: scan interval threshold = %u ms\n",
+		  __FUNCTION__, rp->scan_interval_thr);
+
+exit:
+	return count;
+}
+
+#endif /* RTW_BUSY_DENY_SCAN */
+
 static int proc_get_scan_deny(struct seq_file *m, void *v)
 {
 	struct net_device *dev = m->private;
@@ -4526,6 +4577,10 @@ const struct rtw_proc_hdl adapter_proc_hdls[] = {
 	RTW_PROC_HDL_SSEQ("smps", proc_get_smps, proc_set_smps),
 #endif
 
+#ifdef RTW_BUSY_DENY_SCAN
+	RTW_PROC_HDL_SSEQ("scan_interval_thr", proc_get_scan_interval_thr, \
+			  proc_set_scan_interval_thr),
+#endif
 	RTW_PROC_HDL_SSEQ("scan_deny", proc_get_scan_deny, proc_set_scan_deny),
 #ifdef CONFIG_RTW_TPT_MODE
 	RTW_PROC_HDL_SSEQ("tpt_mode", proc_get_tpt_mode, proc_set_tpt_mode),

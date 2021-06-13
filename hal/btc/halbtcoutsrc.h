@@ -174,6 +174,8 @@ do {\
 #define		BTC_ANT_WIFI_AT_CPL_MAIN	0
 #define		BTC_ANT_WIFI_AT_CPL_AUX		1
 
+#define		TDMA_4SLOT			BIT(8)
+
 typedef enum _BTC_POWERSAVE_TYPE {
 	BTC_PS_WIFI_NATIVE			= 0,	/* wifi original power save behavior */
 	BTC_PS_LPS_ON				= 1,

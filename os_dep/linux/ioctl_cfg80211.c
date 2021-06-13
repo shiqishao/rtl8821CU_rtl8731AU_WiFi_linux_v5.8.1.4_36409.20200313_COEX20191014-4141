@@ -3145,11 +3145,24 @@ bypass_p2p_chk:
 	}
 #endif /* CONFIG_CONCURRENT_MODE */
 
-	/* busy traffic check*/
-	if (rtw_mi_busy_traffic_check(padapter, _TRUE)) {
-		need_indicate_scan_done = _TRUE;
+#ifdef RTW_BUSY_DENY_SCAN
+	/*
+	 * busy traffic check
+	 * Rules:
+	 * 1. If (scan interval <= BUSY_TRAFFIC_SCAN_DENY_PERIOD) always allow
+	 *    scan, otherwise goto rule 2.
+	 * 2. Deny scan if any interface is busy, otherwise allow scan.
+	 */
+	if (pmlmepriv->lastscantime
+	    && (rtw_get_passing_time_ms(pmlmepriv->lastscantime) >
+		registry_par->scan_interval_thr)
+	    && rtw_mi_busy_traffic_check(padapter)) {
+		RTW_WARN(FUNC_ADPT_FMT ": scan abort!! BusyTraffic\n",
+			 FUNC_ADPT_ARG(padapter));
+ 		need_indicate_scan_done = _TRUE;
 		goto check_need_indicate_scan_done;
 	}
+#endif /* RTW_BUSY_DENY_SCAN */
 #endif
 
 #ifdef CONFIG_P2P
@@ -3218,6 +3231,8 @@ check_need_indicate_scan_done:
 		memset(&info, 0, sizeof(info));
 		info.aborted = 0;
 #endif
+		/* the process time of scan results must be over at least 1ms in the newly Android */
+		rtw_msleep_os(1); 
 
 		_rtw_cfg80211_surveydone_event_callback(padapter, request);
 #if (KERNEL_VERSION(4, 7, 0) <= LINUX_VERSION_CODE)
@@ -3231,8 +3246,10 @@ check_need_indicate_scan_done:
 		rtw_ps_deny_cancel(padapter, PS_DENY_SCAN);
 
 exit:
+#ifdef RTW_BUSY_DENY_SCAN
 	if (pmlmepriv)
 		pmlmepriv->lastscantime = rtw_get_current_time();
+#endif
 
 	return ret;
 }

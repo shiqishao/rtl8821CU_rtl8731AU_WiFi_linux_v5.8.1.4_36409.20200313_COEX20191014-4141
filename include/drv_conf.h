@@ -18,6 +18,15 @@
 #include "hal_ic_cfg.h"
 
 #define CONFIG_RSSI_PRIORITY
+
+/* 
+ * RTW_BUSY_DENY_SCAN control if scan would be denied by busy traffic.
+ * When this defined, BUSY_TRAFFIC_SCAN_DENY_PERIOD would be used to judge if 
+ * scan request coming from scan UI. Scan request from scan UI would be
+ * exception and never be denied by busy traffic.
+ */
+#define RTW_BUSY_DENY_SCAN
+
 #ifdef CONFIG_RTW_REPEATER_SON
 	#ifndef CONFIG_AP
 		#define CONFIG_AP

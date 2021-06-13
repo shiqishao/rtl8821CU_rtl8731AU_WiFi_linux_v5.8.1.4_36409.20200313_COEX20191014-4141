@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2007 - 2017 Realtek Corporation.
+ * Copyright(c) 2007 - 2019 Realtek Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -955,6 +955,13 @@ uint rtw_suspend_type = RTW_SUSPEND_TYPE;
 module_param(rtw_suspend_type, uint, 0644);
 #endif
 
+#ifdef RTW_BUSY_DENY_SCAN
+uint rtw_scan_interval_thr = BUSY_TRAFFIC_SCAN_DENY_PERIOD;
+module_param(rtw_scan_interval_thr, uint, 0644);
+MODULE_PARM_DESC(rtw_scan_interval_thr, "Threshold used to judge if scan " \
+		 "request comes from scan UI, unit is ms.");
+#endif /* RTW_BUSY_DENY_SCAN */
+
 #if CONFIG_TX_AC_LIFETIME
 static void rtw_regsty_load_tx_ac_lifetime(struct registry_priv *regsty)
 {
@@ -1416,6 +1423,11 @@ uint loadparam(_adapter *padapter)
 #ifdef CONFIG_RTW_MESH
 	registry_par->peer_alive_based_preq = rtw_peer_alive_based_preq;
 #endif
+
+#ifdef RTW_BUSY_DENY_SCAN
+	registry_par->scan_interval_thr = rtw_scan_interval_thr;
+#endif
+
 	return status;
 }
 
@@ -2581,7 +2593,9 @@ u8 rtw_init_drv_sw(_adapter *padapter)
 		struct hal_spec_t *hal_spec = GET_HAL_SPEC(padapter);
 
 		dvobj->macid_ctl.num = rtw_min(hal_spec->macid_num, MACID_NUM_SW_LIMIT);
-
+		dvobj->macid_ctl.macid_cap = hal_spec->macid_cap;
+		dvobj->macid_ctl.macid_txrpt = hal_spec->macid_txrpt;
+		dvobj->macid_ctl.macid_txrpt_pgsz = hal_spec->macid_txrpt_pgsz;
 		dvobj->cam_ctl.sec_cap = hal_spec->sec_cap;
 		dvobj->cam_ctl.num = rtw_min(hal_spec->sec_cam_ent_num, SEC_CAM_ENT_NUM_SW_LIMIT);
 

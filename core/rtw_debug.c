@@ -157,6 +157,12 @@ void dump_drv_cfg(void *sel)
 	RTW_PRINT_SEL(sel, "CONFIG_RTW_WIFI_HAL\n");
 #endif
 
+#ifdef RTW_BUSY_DENY_SCAN
+	RTW_PRINT_SEL(sel, "RTW_BUSY_DENY_SCAN\n");
+	RTW_PRINT_SEL(sel, "BUSY_TRAFFIC_SCAN_DENY_PERIOD = %u ms\n", \
+		      BUSY_TRAFFIC_SCAN_DENY_PERIOD);
+#endif
+
 #ifdef CONFIG_RTW_TPT_MODE
 	RTW_PRINT_SEL(sel, "CONFIG_RTW_TPT_MODE\n");
 #endif 
@@ -1687,7 +1693,7 @@ ssize_t proc_set_survey_info(struct file *file, const char __user *buffer, size_
 		goto cancel_ps_deny;
 	}
 
-	if (rtw_mi_busy_traffic_check(padapter, _FALSE)) {
+	if (rtw_mi_busy_traffic_check(padapter)) {
 		RTW_INFO("scan abort!! BusyTraffic == _TRUE\n");
 		goto cancel_ps_deny;
 	}
